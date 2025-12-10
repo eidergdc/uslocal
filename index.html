@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/jpeg" href="https://images.pexels.com/photos/1262304/pexels-photo-1262304.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop&crop=center" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="description" content="US LOCAL - Marketplace para brasileiros nos EUA" />
+    <meta name="theme-color" content="#009739" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="US LOCAL" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="apple-touch-icon" href="https://images.pexels.com/photos/1262304/pexels-photo-1262304.jpeg?auto=compress&cs=tinysrgb&w=180&h=180&fit=crop&crop=center" />
+    <link rel="manifest" href="/manifest.json" />
+    <title>US LOCAL - Marketplace Brasileiro</title>
+    <style>
+      body {
+        overscroll-behavior-y: none;
+        -webkit-overflow-scrolling: touch;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <div style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: system-ui;
+        text-align: center;
+        padding: 20px;
+      ">
+        <div>
+          <h1 style="color: #009739; margin-bottom: 20px;">US LOCAL</h1>
+          <p style="color: #666;">JavaScript é necessário para executar esta aplicação.</p>
+        </div>
+      </div>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Force reload if cached version detected
+      const currentVersion = '2025-11-10-v2';
+      const storedVersion = localStorage.getItem('appVersion');
+
+      if (storedVersion !== currentVersion) {
+        console.log('New version detected, clearing caches...');
+
+        // Unregister all service workers
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for(let registration of registrations) {
+              registration.unregister();
+            }
+          });
+        }
+
+        // Clear all caches
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            for (let name of names) {
+              caches.delete(name);
+            }
+          }).then(function() {
+            localStorage.setItem('appVersion', currentVersion);
+            window.location.reload(true);
+          });
+        } else {
+          localStorage.setItem('appVersion', currentVersion);
+          window.location.reload(true);
+        }
+      }
+    </script>
+  </body>
+</html>

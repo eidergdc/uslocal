@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Categorias dos Items</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .item {
+            padding: 15px;
+            margin: 10px 0;
+            background: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            border-radius: 4px;
+        }
+        .item-name {
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .item-categories {
+            font-family: monospace;
+            background: #fff;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        .item-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+        .status-approved { background: #4CAF50; color: white; }
+        .status-pending { background: #FF9800; color: white; }
+        .status-rejected { background: #f44336; color: white; }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #666;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .highlight {
+            background: #fff9c4;
+            border-left-color: #FFC107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug - Categorias dos Items</h1>
+        <div id="content">
+            <div class="loading">Carregando dados do Firebase...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js';
+        import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js';
+
+        // Firebase config (será preenchido pelos valores do .env)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCr9p1rqwG6Mty1THu9_U4hBm0PbhHm8Mc",
+            authDomain: "guiabancariodigital.firebaseapp.com",
+            projectId: "guiabancariodigital",
+            storageBucket: "guiabancariodigital.firebasestorage.app",
+            messagingSenderId: "841257870036",
+            appId: "1:841257870036:web:e84f32bf26ec17b7d0f12d"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadItems() {
+            const contentDiv = document.getElementById('content');
+
+            try {
+                console.log('📡 Carregando items do Firebase...');
+                const querySnapshot = await getDocs(collection(db, 'items'));
+
+                console.log('📊 Total de documentos:', querySnapshot.size);
+
+                if (querySnapshot.empty) {
+                    contentDiv.innerHTML = '<div class="error">Nenhum item encontrado no banco de dados.</div>';
+                    return;
+                }
+
+                let html = `<p><strong>Total de items encontrados:</strong> ${querySnapshot.size}</p>`;
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const categories = data.categories || [];
+                    const isTatuador = categories.some(cat =>
+                        cat.toLowerCase().includes('tatu')
+                    );
+
+                    html += `
+                        <div class="item ${isTatuador ? 'highlight' : ''}">
+                            <div class="item-name">
+                                ${isTatuador ? '💉 ' : ''}${data.name || 'Sem nome'}
+                                <span class="item-status status-${data.status || 'unknown'}">${data.status || 'N/A'}</span>
+                            </div>
+                            <div><strong>ID:</strong> ${doc.id}</div>
+                            <div><strong>Owner ID:</strong> ${data.ownerId || 'N/A'}</div>
+                            <div><strong>Visible:</strong> ${data.visible !== undefined ? data.visible : 'N/A'}</div>
+                            <div><strong>Categories (array):</strong></div>
+                            <div class="item-categories">
+                                ${JSON.stringify(categories, null, 2)}
+                            </div>
+                            ${data.coordinates ? `
+                                <div><strong>Coordenadas:</strong> ${data.coordinates.lat}, ${data.coordinates.lng}</div>
+                            ` : '<div style="color: red;"><strong>⚠️ SEM COORDENADAS</strong></div>'}
+                        </div>
+                    `;
+                });
+
+                contentDiv.innerHTML = html;
+
+                // Log para console também
+                console.log('✅ Items carregados com sucesso');
+
+            } catch (error) {
+                console.error('❌ Erro ao carregar items:', error);
+                contentDiv.innerHTML = `
+                    <div class="error">
+                        <strong>Erro ao carregar dados:</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Carregar dados quando a página carregar
+        loadItems();
+    </script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remover Categorias Duplicadas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .info { background: #e3f2fd; color: #0d47a1; }
+        .success { background: #e8f5e9; color: #2e7d32; }
+        .warning { background: #fff3e0; color: #e65100; }
+        .error { background: #ffebee; color: #c62828; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .danger {
+            background: #f44336;
+        }
+        .danger:hover {
+            background: #da190b;
+        }
+        .category-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f9f9f9;
+            border-left: 3px solid #4CAF50;
+        }
+        .duplicate {
+            border-left-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Remover Categorias Duplicadas</h1>
+        <div id="content">
+            <button onclick="checkDuplicates()">1. Verificar Duplicatas</button>
+            <button onclick="removeDuplicates()" id="removeBtn" disabled class="danger">2. Remover Duplicatas</button>
+        </div>
+        <div id="results"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js';
+        import { getFirestore, collection, getDocs, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCr9p1rqwG6Mty1THu9_U4hBm0PbhHm8Mc",
+            authDomain: "guiabancariodigital.firebaseapp.com",
+            projectId: "guiabancariodigital",
+            storageBucket: "guiabancariodigital.firebasestorage.app",
+            messagingSenderId: "841257870036",
+            appId: "1:841257870036:web:e84f32bf26ec17b7d0f12d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let duplicatesToRemove = [];
+
+        window.checkDuplicates = async function() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="status info">Verificando categorias...</div>';
+
+            try {
+                const snapshot = await getDocs(collection(db, 'categories'));
+
+                const categories = [];
+                snapshot.forEach((doc) => {
+                    categories.push({
+                        docId: doc.id,
+                        ...doc.data()
+                    });
+                });
+
+                console.log('Total de categorias:', categories.length);
+                console.log('Categorias:', categories);
+
+                // Agrupar por nome
+                const grouped = {};
+                categories.forEach(cat => {
+                    const key = cat.name.toLowerCase().trim();
+                    if (!grouped[key]) {
+                        grouped[key] = [];
+                    }
+                    grouped[key].push(cat);
+                });
+
+                // Encontrar duplicatas
+                duplicatesToRemove = [];
+                let html = `<div class="status success">Total de categorias: ${categories.length}</div>`;
+
+                for (const [name, cats] of Object.entries(grouped)) {
+                    if (cats.length > 1) {
+                        html += `<div class="status warning">⚠️ Duplicata encontrada: "${cats[0].name}" (${cats.length} vezes)</div>`;
+
+                        // Manter a primeira, marcar as outras para remoção
+                        for (let i = 1; i < cats.length; i++) {
+                            duplicatesToRemove.push(cats[i]);
+                            html += `<div class="category-item duplicate">
+                                ❌ Será removido: ${cats[i].name} (ID: ${cats[i].docId})
+                            </div>`;
+                        }
+
+                        html += `<div class="category-item">
+                            ✅ Será mantido: ${cats[0].name} (ID: ${cats[0].docId})
+                        </div>`;
+                    }
+                }
+
+                if (duplicatesToRemove.length > 0) {
+                    html += `<div class="status warning">
+                        <strong>${duplicatesToRemove.length} categoria(s) duplicada(s) será(ão) removida(s).</strong><br>
+                        Clique no botão "2. Remover Duplicatas" para confirmar.
+                    </div>`;
+                    document.getElementById('removeBtn').disabled = false;
+                } else {
+                    html += '<div class="status success">✅ Nenhuma duplicata encontrada!</div>';
+                }
+
+                resultsDiv.innerHTML = html;
+
+            } catch (error) {
+                console.error('Erro:', error);
+                resultsDiv.innerHTML = `<div class="status error">❌ Erro: ${error.message}</div>`;
+            }
+        };
+
+        window.removeDuplicates = async function() {
+            if (duplicatesToRemove.length === 0) {
+                alert('Nenhuma duplicata para remover. Execute a verificação primeiro.');
+                return;
+            }
+
+            if (!confirm(`Tem certeza que deseja remover ${duplicatesToRemove.length} categoria(s) duplicada(s)?`)) {
+                return;
+            }
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="status info">Removendo duplicatas...</div>';
+
+            try {
+                let removed = 0;
+                for (const cat of duplicatesToRemove) {
+                    await deleteDoc(doc(db, 'categories', cat.docId));
+                    removed++;
+                    console.log('Removida:', cat.name, cat.docId);
+                }
+
+                resultsDiv.innerHTML = `
+                    <div class="status success">
+                        ✅ ${removed} categoria(s) duplicada(s) removida(s) com sucesso!
+                    </div>
+                    <div class="status info">
+                        Recarregue o aplicativo para ver as mudanças.
+                    </div>
+                `;
+
+                duplicatesToRemove = [];
+                document.getElementById('removeBtn').disabled = true;
+
+            } catch (error) {
+                console.error('Erro:', error);
+                resultsDiv.innerHTML = `<div class="status error">❌ Erro ao remover: ${error.message}</div>`;
+            }
+        };
+    </script>
+</body>
+</html>
