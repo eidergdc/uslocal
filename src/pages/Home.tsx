@@ -273,44 +273,27 @@ const Home: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4 md:py-8">
-        {/* Hero Section */}
-        <div className="text-center mb-4 sm:mb-6 md:mb-8">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold mb-2 sm:mb-3 md:mb-4 bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent px-2">
-            {t('home.title')}
-          </h1>
-          <p className="text-sm sm:text-base md:text-xl text-gray-600 mb-4 sm:mb-6 md:mb-8 px-4">
-            {t('home.subtitle')}
-          </p>
-        </div>
-
-        {/* Info Banner for Anonymous Users */}
+        {/* Info Banner for Anonymous Users - Compact Version */}
         {(!user || user.isAnonymous) && (
-          <div className="mb-6 bg-gradient-to-r from-blue-500 to-green-600 rounded-xl shadow-lg p-4 sm:p-6 text-white">
-            <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0 bg-white/20 rounded-full p-2">
-                <User size={24} />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-lg mb-2">Quer anunciar seu negócio?</h3>
-                <p className="text-sm sm:text-base text-white/90 mb-3">
-                  Crie uma conta gratuita para anunciar seus serviços ou negócios e alcançar a comunidade brasileira nos EUA!
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setShowLoginModal(true)}
-                    className="bg-white text-green-600 hover:bg-gray-100 px-4 py-2 rounded-lg font-semibold text-sm transition-colors inline-flex items-center space-x-2"
-                  >
-                    <User size={16} />
-                    <span>Criar Conta Grátis</span>
-                  </button>
-                  <button
-                    onClick={() => navigate('/instalar')}
-                    className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors inline-flex items-center space-x-2 border border-white/30"
-                  >
-                    <Smartphone size={16} />
-                    <span>Instalar App</span>
-                  </button>
+          <div className="mb-4 bg-gradient-to-r from-blue-500 to-green-600 rounded-lg shadow-md p-3 text-white">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center space-x-2 flex-1 min-w-0">
+                <div className="flex-shrink-0 bg-white/20 rounded-full p-1.5">
+                  <User size={18} />
                 </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">
+                    Quer anunciar? Crie uma conta grátis!
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-shrink-0 gap-2">
+                <button
+                  onClick={() => setShowLoginModal(true)}
+                  className="bg-white text-green-600 hover:bg-gray-100 px-3 py-1.5 rounded-lg font-semibold text-xs transition-colors"
+                >
+                  Criar Conta
+                </button>
               </div>
             </div>
           </div>
