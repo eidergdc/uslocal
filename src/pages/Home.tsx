@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { List, Map, Star, MapPin, User, Smartphone } from 'lucide-react';
+import { List, Map, Star, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from '../contexts/LocationContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -273,32 +273,6 @@ const Home: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4 md:py-8">
-        {/* Info Banner for Anonymous Users - Compact Version */}
-        {(!user || user.isAnonymous) && (
-          <div className="mb-4 bg-gradient-to-r from-blue-500 to-green-600 rounded-lg shadow-md p-3 text-white">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center space-x-2 flex-1 min-w-0">
-                <div className="flex-shrink-0 bg-white/20 rounded-full p-1.5">
-                  <User size={18} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">
-                    Quer anunciar? Crie uma conta grátis!
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-shrink-0 gap-2">
-                <button
-                  onClick={() => setShowLoginModal(true)}
-                  className="bg-white text-green-600 hover:bg-gray-100 px-3 py-1.5 rounded-lg font-semibold text-xs transition-colors"
-                >
-                  Criar Conta
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Banners */}
         {banners.length > 0 && <Banner banners={banners} />}
 
