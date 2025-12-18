@@ -6,18 +6,15 @@ import { useAuth } from '../contexts/AuthContext';
 import { getItems } from '../services/itemService';
 import { getCategories } from '../services/categoryService';
 import { getActiveAdsByPlacement } from '../services/sponsoredAdService';
-import { Item, Category, Banner as BannerType, SponsoredAd } from '../types';
+import { Item, Category, SponsoredAd } from '../types';
 import { calculateDistance } from '../utils/distance';
 import { t } from '../i18n';
-import Banner from '../components/Home/Banner';
 import SearchFilters from '../components/Home/SearchFilters';
 import CategoryStories from '../components/Home/CategoryStories';
 import ItemCard from '../components/Common/ItemCard';
 import SponsoredAdCard from '../components/Home/SponsoredAdCard';
 import FeaturedBanner from '../components/Home/FeaturedBanner';
 import GoogleMap from '../components/Map/GoogleMap';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../config/firebase';
 import FeaturedItemsCarousel from '../components/Home/FeaturedItemsCarousel';
 import LoginModal from '../components/Auth/LoginModal';
 
@@ -29,7 +26,6 @@ const Home: React.FC = () => {
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [mapItems, setMapItems] = useState<Item[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [banners, setBanners] = useState<BannerType[]>([]);
   const [sponsoredAds, setSponsoredAds] = useState<SponsoredAd[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -53,26 +49,6 @@ const Home: React.FC = () => {
     }
   }, [user?.photoURL]);
 
-  const getBanners = async (): Promise<BannerType[]> => {
-    try {
-      const q = query(
-        collection(db, 'banners'),
-        where('active', '==', true)
-      );
-      
-      const snapshot = await getDocs(q);
-      const banners = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as BannerType[];
-      
-      // Sort by order field in JavaScript instead of Firestore
-      return banners.sort((a, b) => (a.order || 0) - (b.order || 0));
-    } catch (error) {
-      console.error('Error getting banners:', error);
-      return [];
-    }
-  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -120,9 +96,8 @@ const Home: React.FC = () => {
           allItems = allItems.filter(item => item.visible);
         }
 
-        const [categoriesData, bannersData, adsData] = await Promise.all([
+        const [categoriesData, adsData] = await Promise.all([
           getCategories(),
-          getBanners(),
           getActiveAdsByPlacement('home_list')
         ]);
 
@@ -146,7 +121,6 @@ const Home: React.FC = () => {
 
         setItems(allItems);
         setCategories(categoriesData);
-        setBanners(bannersData);
         setSponsoredAds(adsData);
         
       } catch (error) {
@@ -273,9 +247,6 @@ const Home: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4 md:py-8">
-        {/* Banners */}
-        {banners.length > 0 && <Banner banners={banners} />}
-
         {/* Category Stories */}
         <CategoryStories
           categories={categories}
