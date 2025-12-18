@@ -87,3 +87,27 @@ export const reportReview = async (reviewId: string): Promise<void> => {
     throw error;
   }
 };
+
+export const getUserReviews = async (userId: string): Promise<Review[]> => {
+  try {
+    const q = query(
+      collection(db, 'reviews'),
+      where('userId', '==', userId)
+    );
+
+    const snapshot = await getDocs(q);
+    return snapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+      .sort((a, b) => {
+        const aTime = a.createdAt?.seconds || 0;
+        const bTime = b.createdAt?.seconds || 0;
+        return bTime - aTime;
+      }) as Review[];
+  } catch (error) {
+    console.error('Error getting user reviews:', error);
+    throw error;
+  }
+};

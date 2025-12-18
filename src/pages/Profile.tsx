@@ -3,8 +3,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { User, Heart, Star, MapPin, Settings, Camera, Upload, Ruler, Eye, MousePointerClick, Trash2, EyeOff } from 'lucide-react';
 import { getItems, deleteItem, toggleItemVisibility } from '../services/itemService';
-import { Item } from '../types';
+import { Item, Review } from '../types';
 import { getUserItemsAnalytics, ItemAnalytics } from '../services/analyticsService';
+import { getUserReviews } from '../services/reviewService';
 import ItemCard from '../components/Common/ItemCard';
 import LoginModal from '../components/Auth/LoginModal';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -19,6 +20,8 @@ const Profile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'items' | 'favorites' | 'reviews' | 'settings'>('items');
   const [userItems, setUserItems] = useState<Item[]>([]);
   const [favoriteItems, setFavoriteItems] = useState<Item[]>([]);
+  const [userReviews, setUserReviews] = useState<Review[]>([]);
+  const [reviewItems, setReviewItems] = useState<Record<string, Item>>({});
   const [itemsAnalytics, setItemsAnalytics] = useState<Record<string, ItemAnalytics>>({});
   const [loading, setLoading] = useState(true);
   const [showConvertModal, setShowConvertModal] = useState(false);
@@ -88,6 +91,23 @@ const Profile: React.FC = () => {
         const allApprovedItems = await getItems({ status: 'approved' });
         const favoriteItemsData = allApprovedItems.filter(item => user.favorites.includes(item.id));
         setFavoriteItems(favoriteItemsData);
+      }
+
+      // Load user reviews
+      const reviews = await getUserReviews(user.uid);
+      setUserReviews(reviews);
+
+      // Load items for the reviews
+      if (reviews.length > 0) {
+        const itemIds = [...new Set(reviews.map(r => r.itemId))];
+        const allApprovedItems = await getItems({ status: 'approved' });
+        const itemsMap: Record<string, Item> = {};
+        allApprovedItems.forEach(item => {
+          if (itemIds.includes(item.id)) {
+            itemsMap[item.id] = item;
+          }
+        });
+        setReviewItems(itemsMap);
       }
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -315,7 +335,7 @@ const Profile: React.FC = () => {
                 <div className="text-gray-600">Favoritos</div>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl font-bold text-yellow-600">0</div>
+                <div className="text-2xl font-bold text-yellow-600">{userReviews.length}</div>
                 <div className="text-gray-600">Avaliações</div>
               </div>
             </div>
@@ -466,11 +486,64 @@ const Profile: React.FC = () => {
               )}
 
               {activeTab === 'reviews' && (
-                <div className="text-center py-12">
-                  <Star className="mx-auto text-gray-400 mb-4" size={48} />
-                  <p className="text-gray-500 text-lg">
-                    Suas avaliações aparecerão aqui.
-                  </p>
+                <div>
+                  {userReviews.length > 0 ? (
+                    <div className="space-y-4">
+                      {userReviews.map(review => {
+                        const item = reviewItems[review.itemId];
+                        return (
+                          <div key={review.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div className="flex items-start space-x-4">
+                              {item && item.images && item.images.length > 0 && (
+                                <img
+                                  src={item.images[0]}
+                                  alt={item.title}
+                                  className="w-20 h-20 rounded-lg object-cover cursor-pointer"
+                                  onClick={() => navigate(`/item/${item.id}`)}
+                                />
+                              )}
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between mb-2">
+                                  <h3
+                                    className="font-semibold text-gray-800 cursor-pointer hover:text-green-600 transition-colors"
+                                    onClick={() => item && navigate(`/item/${item.id}`)}
+                                  >
+                                    {item ? item.title : 'Item removido'}
+                                  </h3>
+                                  <div className="flex items-center space-x-1">
+                                    {[...Array(5)].map((_, i) => (
+                                      <Star
+                                        key={i}
+                                        size={16}
+                                        className={i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                                {review.comment && (
+                                  <p className="text-gray-600 mb-2">{review.comment}</p>
+                                )}
+                                <p className="text-sm text-gray-400">
+                                  {review.createdAt?.toDate?.()?.toLocaleDateString('pt-BR', {
+                                    day: '2-digit',
+                                    month: 'long',
+                                    year: 'numeric'
+                                  }) || 'Data não disponível'}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Star className="mx-auto text-gray-400 mb-4" size={48} />
+                      <p className="text-gray-500 text-lg">
+                        Você ainda não fez nenhuma avaliação.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
