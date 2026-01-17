@@ -16,6 +16,9 @@ const getCategoryIcon = (categoryId: string) => {
     mecanico: '🔧',
     encanador: '🔧',
     manicure: '💅',
+    estetica: '💆',
+    tatuador: '💉',
+    traducao: '🌍',
     barbeiro: '✂️',
     igreja: '⛪',
     mercado: '🛒',
@@ -28,7 +31,11 @@ const getCategoryIcon = (categoryId: string) => {
     advogado: '⚖️',
     contabilidade: '📊',
     limpeza: '✨',
-    eventos: '📅'
+    eventos: '📅',
+    construcao: '🏗️',
+    pintor: '🎨',
+    jardinagem: '🌱',
+    seguranca: '🔐'
   };
   return iconMap[categoryId] || '📍';
 };
@@ -37,6 +44,9 @@ const getCategoryIcon = (categoryId: string) => {
 const getCategoryColor = (categoryId: string) => {
   const colors: { [key: string]: string } = {
     manicure: '#E91E63',
+    estetica: '#9C27B0',
+    tatuador: '#212121',
+    traducao: '#10b981',
     barbeiro: '#795548',
     igreja: '#9C27B0',
     mercado: '#4CAF50',
@@ -52,7 +62,11 @@ const getCategoryColor = (categoryId: string) => {
     escola: '#FFEB3B',
     eventos: '#E91E63',
     autoescola: '#FF9800',
-    mecanico: '#424242'
+    mecanico: '#424242',
+    construcao: '#FF6F00',
+    pintor: '#E91E63',
+    jardinagem: '#66BB6A',
+    seguranca: '#424242'
   };
   return colors[categoryId] || '#009739';
 };
@@ -425,7 +439,7 @@ const FullscreenMap: React.FC = () => {
           title: item.name,
           icon: markerIcon,
           zIndex: item.featured ? 1000 : 100,
-          optimized: true
+          optimized: false
         });
 
         marker.addListener('click', () => {

@@ -15,6 +15,7 @@ const getCategoryIcon = (categoryId: string) => {
     manicure: '💅',
     estetica: '💆',
     tatuador: '💉',
+    traducao: '🌍',
     barbeiro: '✂️',
     igreja: '⛪',
     mercado: '🛒',
@@ -27,7 +28,11 @@ const getCategoryIcon = (categoryId: string) => {
     advogado: '⚖️',
     contabilidade: '📊',
     limpeza: '✨',
-    eventos: '📅'
+    eventos: '📅',
+    construcao: '🏗️',
+    pintor: '🎨',
+    jardinagem: '🌱',
+    seguranca: '🔐'
   };
   return iconMap[categoryId.toLowerCase()] || '📍';
 };
@@ -38,6 +43,7 @@ const getCategoryColor = (categoryId: string) => {
     manicure: '#E91E63',
     estetica: '#9C27B0',
     tatuador: '#212121',
+    traducao: '#10b981',
     barbeiro: '#795548',
     igreja: '#9C27B0',
     mercado: '#4CAF50',
@@ -53,7 +59,11 @@ const getCategoryColor = (categoryId: string) => {
     escola: '#FFEB3B',
     eventos: '#E91E63',
     autoescola: '#FF9800',
-    mecanico: '#424242'
+    mecanico: '#424242',
+    construcao: '#FF6F00',
+    pintor: '#E91E63',
+    jardinagem: '#66BB6A',
+    seguranca: '#424242'
   };
   return colors[categoryId.toLowerCase()] || '#009739';
 };
@@ -426,7 +436,7 @@ const GoogleMapComponent: React.FC<GoogleMapProps & { className?: string }> = ({
           title: item.name,
           icon: markerIcon,
           zIndex: item.featured ? 1000 : 100,
-          optimized: true // Usar otimização padrão do Google
+          optimized: false
         });
 
         // Adicionar listener de clique
