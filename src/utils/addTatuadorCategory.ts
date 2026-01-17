@@ -33,7 +33,8 @@ export const addMissingCategories = async () => {
     const missingCategories = [
       { id: 'tatuador', name: 'Tatuador', nameEn: 'Tattoo Artist', icon: 'PenTool', color: '#212121' },
       { id: 'autoescola', name: 'Autoescola', nameEn: 'Driving School', icon: 'Car', color: '#FF9800' },
-      { id: 'contabilidade', name: 'Contabilidade', nameEn: 'Accounting', icon: 'Calculator', color: '#607D8B' }
+      { id: 'contabilidade', name: 'Contabilidade', nameEn: 'Accounting', icon: 'Calculator', color: '#607D8B' },
+      { id: 'traducao', name: 'Tradução e interpretação', nameEn: 'Translation and Interpretation', icon: 'Languages', color: '#10b981' }
     ];
 
     for (const category of missingCategories) {
