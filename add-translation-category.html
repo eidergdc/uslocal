@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adicionar Categoria Tradução</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    button {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 5px;
+    }
+    button:hover {
+      background: #059669;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    #output {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 5px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .success { color: #10b981; }
+    .error { color: #ef4444; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Adicionar Categoria: Tradução e interpretação</h1>
+    <p>Esta ferramenta adiciona a categoria "Tradução e interpretação" ao Firebase.</p>
+
+    <button id="addBtn" onclick="addTranslationCategory()">
+      Adicionar Categoria
+    </button>
+
+    <button id="checkBtn" onclick="checkCategory()">
+      Verificar Categoria
+    </button>
+
+    <div id="output"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+    // Firebase config - replace with your actual config
+    const firebaseConfig = {
+      apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+      appId: import.meta.env.VITE_FIREBASE_APP_ID
+    };
+
+    // Try to load config from .env file
+    let config = firebaseConfig;
+
+    // If running locally, try to read from localStorage backup
+    const savedConfig = localStorage.getItem('firebaseConfig');
+    if (savedConfig) {
+      config = JSON.parse(savedConfig);
+    }
+
+    const app = initializeApp(config);
+    const db = getFirestore(app);
+
+    function log(message, type = 'info') {
+      const output = document.getElementById('output');
+      const span = document.createElement('div');
+      span.className = type;
+      span.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      output.appendChild(span);
+      output.scrollTop = output.scrollHeight;
+      console.log(message);
+    }
+
+    window.addTranslationCategory = async function() {
+      const btn = document.getElementById('addBtn');
+      btn.disabled = true;
+      log('Iniciando adição da categoria...', 'info');
+
+      try {
+        const categoryRef = doc(db, 'categories', 'traducao');
+
+        await setDoc(categoryRef, {
+          name: 'Tradução e interpretação',
+          nameEn: 'Translation and Interpretation',
+          icon: 'Languages',
+          color: '#10b981',
+          active: true,
+          iconSize: 24,
+          orderIndex: 100,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }, { merge: true });
+
+        log('✅ Categoria "Tradução e interpretação" adicionada com sucesso!', 'success');
+        log('ID: traducao', 'success');
+        log('Ícone: Languages (Globe com línguas)', 'success');
+        log('Cor: #10b981 (verde)', 'success');
+
+        // Verify it was added
+        const docSnap = await getDoc(categoryRef);
+        if (docSnap.exists()) {
+          log('Categoria verificada no banco de dados!', 'success');
+          log(JSON.stringify(docSnap.data(), null, 2), 'info');
+        }
+      } catch (error) {
+        log(`❌ Erro: ${error.message}`, 'error');
+        console.error(error);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.checkCategory = async function() {
+      const btn = document.getElementById('checkBtn');
+      btn.disabled = true;
+      log('Verificando categoria...', 'info');
+
+      try {
+        const categoryRef = doc(db, 'categories', 'traducao');
+        const docSnap = await getDoc(categoryRef);
+
+        if (docSnap.exists()) {
+          log('✅ Categoria existe!', 'success');
+          log(JSON.stringify(docSnap.data(), null, 2), 'success');
+        } else {
+          log('❌ Categoria não encontrada!', 'error');
+        }
+
+        // List all categories
+        log('\n--- Todas as categorias ---', 'info');
+        const categoriesSnapshot = await getDocs(collection(db, 'categories'));
+        categoriesSnapshot.forEach((doc) => {
+          log(`${doc.id}: ${doc.data().name}`, 'info');
+        });
+
+      } catch (error) {
+        log(`❌ Erro: ${error.message}`, 'error');
+        console.error(error);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    // Auto-load on page load
+    log('Página carregada. Clique em um botão para começar.', 'info');
+  </script>
+</body>
+</html>
